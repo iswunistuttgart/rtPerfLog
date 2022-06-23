@@ -32,7 +32,8 @@ typedef int64_t __int64_t;
 
 static long qpcFreq;
 static long ticks2nano;
-#else // Linux
+#endif
+#ifdef __linux__
 
 #include "time.h"
 #include <malloc.h>
@@ -43,7 +44,8 @@ static long ticks2nano;
 
 static __uint32_t u = 0;
 
-#ifndef WIN
+#ifdef __linux__
+#if defined(__amd64__)
 
 //! This Queries the rdtscp but the current cpu frequency is required to calculate the time.
 //! Do NOT use this function for productiv systems!
@@ -57,6 +59,7 @@ static inline __uint64_t _rdtscp(__uint32_t *aux)
     return (rdx << 32) + rax;
 }
 #endif
+#endif
 
 #ifdef WIN
 int clock_getAsFileTime(struct timespec *spec) // C-file part
@@ -69,7 +72,7 @@ int clock_getAsFileTime(struct timespec *spec) // C-file part
     return 0;
 }
 
-#define exp7 10000000           // 1E+7     //C-file part
+#define exp7 10000000           // 1E+7
 #define exp9 1000000000         // 1E+9
 #define w2ux 116444736000000000 // 1.jan1601 to 1.jan1970
 
@@ -123,7 +126,8 @@ void _getTime(struct timespec *time, logger_clockType_t type)
     {
         _clock_getAsRdtscp(time);
     }
-#else
+#endif // WIN
+#ifdef __linux__
     if (type == LCLOCK_LINUX_REALTIME)
     {
         clock_gettime(CLOCK_MONOTONIC, time);
@@ -135,15 +139,13 @@ void _getTime(struct timespec *time, logger_clockType_t type)
 
         TIMEVAL_TO_TIMESPEC(&tv, time);
     }
-    else if (type == LCLOCK_LINUX_PTP)
-    {
-        // clock_gettime(ptpClock, time);
-    }
+#if defined(__amd64__)
     else if (type == LCLOCK_RDTSCP)
     {
         time->tv_nsec = _rdtscp(&u);
         time->tv_sec = 0;
     }
+#endif
 #endif
 }
 
@@ -285,10 +287,11 @@ int logger_evaluate(logger_tagPair_t *pairList, int pairListCount, logger_tagDef
     {
         logger_logTag_t tags = pairList[c].tag_start;
         logger_logTag_t tage = pairList[c].tag_end;
-        double max, mean = 0.0;
+        double max = 0.0;
+        double mean = 0.0;
         double min = FLT_MAX;
-        uint64_t count = 0;
-        int median_list_size = 1000;
+        size_t count = 0;
+        unsigned int median_list_size = 1000;
         double *median_list = (double *)malloc(median_list_size * sizeof(double));
 
         for (int j = 0; j < _logger_config.listCount; j++)
@@ -345,7 +348,7 @@ int logger_evaluate(logger_tagPair_t *pairList, int pairListCount, logger_tagDef
 
         // Evaluate median
         qsort(median_list, count, sizeof(double), __compare);
-        int mid = count / 2;
+        size_t mid = count / 2U;
         double median = (count % 2 != 0) ? median_list[mid] : (median_list[mid] + median_list[mid - 1]) / 2.0;
         free(median_list);
 
@@ -556,8 +559,8 @@ struct timespec logger_elapsedTime(struct timespec start, struct timespec end)
     struct timespec temp;
     if ((end.tv_nsec - start.tv_nsec) < 0)
     {
-        temp.tv_sec = end.tv_sec - start.tv_sec - 1;
-        temp.tv_nsec = 1e9 + end.tv_nsec - start.tv_nsec;
+        temp.tv_sec = end.tv_sec - start.tv_sec - 1l;
+        temp.tv_nsec = 1000000000l + end.tv_nsec - start.tv_nsec;
     }
     else
     {
@@ -601,7 +604,7 @@ int logger_cmpTime(struct timespec first, struct timespec second)
 }
 float logger_timespecToFloat_ms(struct timespec time)
 {
-    return (float)time.tv_sec * 1000 + (float)time.tv_nsec / (float)1000000;
+    return (float)time.tv_sec * 1000.0f + (float)time.tv_nsec / 1000000.0f;
 }
 
 void logger_clear()

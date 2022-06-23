@@ -17,7 +17,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef WIN
 #include <unistd.h>
+#else
+#include <windows.h>
+#endif
 
 #define FOREACH_TAG(TAG) \
     TAG(TAG_DEMO)
@@ -69,7 +73,7 @@ void main()
         logger_getTime(&end);
         logger_addLogEntry(TAG_DEMO_END, i, 0);
         struct timespec diff = logger_elapsedTime(start, end);
-        printf("Elapsed time is: %f\n", logger_timespecToFloat_ms(diff));
+        printf("Elapsed time is: %fms\n", logger_timespecToFloat_ms(diff));
     }
     logger_tagPair_t list[1] = {{TAG_DEMO_START, TAG_DEMO_END}};
     logger_evaluate(list, 1, def, TAG_COUNT, NULL);

@@ -22,10 +22,11 @@ extern "C"
 {
 #endif
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#if defined(WIN32) || defined(_WIN32) || defined(_WIN64) && !defined(__CYGWIN__)
 #define WIN 1
 #include "time.h"
-#else // Unix
+#endif
+#ifdef __linux__
 #include "sys/time.h"
 #endif
 
@@ -85,14 +86,16 @@ extern "C"
      */
     typedef enum
     {
+#if defined(__amd64__) || defined(_M_AMD64) || defined(_M_X64) || defined(_M_IX86)
         LCLOCK_RDTSCP,
+#endif
 #if defined(WIN)
         LCLOCK_WIN_AFILEDATE,
         LCLOCK_WIN_QUERYPERFCOUNTER,
-#else
-    LCLOCK_LINUX_REALTIME,
-    LCLOCK_LINUX_TIMEOFDAY,
-    LCLOCK_LINUX_PTP
+#endif
+#ifdef __linux__
+        LCLOCK_LINUX_REALTIME,
+        LCLOCK_LINUX_TIMEOFDAY
 #endif
     } logger_clockType_t;
 

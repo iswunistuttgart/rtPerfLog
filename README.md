@@ -5,6 +5,9 @@ rtPerfLog is a library for performance evaluation in real-time and non-real-time
 Supported OS:
  - Linux (Tested with Ubuntu 18.04+)
  - Windows (Tested with WIN10)
+Supported Platforms:
+ - x86-64
+ - ARM (Tested with ARM v8.2)
 
 rtPerfLog was used successfully in the following publications for performance evaluation:
   - M. Fischer, O. Riedel, A. Lechler and A. Verl, (2021) **Arithmetic Coding for Floating-Point Numbers,** 2021 IEEE Conference on Dependable and Secure Computing (DSC), pp. 01-08, doi: [10.1109/DSC49826.2021.9346236](https://ieeexplore.ieee.org/document/9346236/)
