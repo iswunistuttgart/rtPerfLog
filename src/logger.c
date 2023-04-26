@@ -325,7 +325,7 @@ int logger_evaluate(logger_tagPair_t *pairList, int pairListCount, logger_tagDef
             }
         }
         if (csv_filename == NULL) {
-            printf("%s-%s | Count:%lu Min:%.5f Max:%.5f Mean:%.5f Median:%.5f\n", infos, infoe, count, min, max,
+            printf("%s-%s | Count:%lu Min:%.5fms Max:%.5fms Mean:%.5fms Median:%.5fms\n", infos, infoe, count, min, max,
                    mean / count, median);
         } else {
             fprintf(pFile, "%s-%s;%lu;%.10f;%.10f;%.10f;%.10f\n", infos, infoe, count, min, max, mean / count, median);
