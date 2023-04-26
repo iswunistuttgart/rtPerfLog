@@ -148,17 +148,25 @@ int logger_init(logger_config_t conf) {
     _logger_errorCount = (int *)calloc(conf.listCount, sizeof(int));
 #ifndef WIN
     int ret = mlock(_logger_nextEntry, sizeof(int) * conf.listCount);
-    ret = mlock(_logger_nextEntry, sizeof(logger_logEntry_t *) * conf.listCount);
-    ret = mlock(_logger_logEntryList[0], sizeof(logger_logEntry_t) * conf.listSize * conf.listCount);
-    ret = mlock(_logger_errorCount, sizeof(int) * conf.listCount);
+    ret += mlock(_logger_nextEntry, sizeof(logger_logEntry_t *) * conf.listCount);
+    ret += mlock(_logger_logEntryList[0], sizeof(logger_logEntry_t) * conf.listSize * conf.listCount);
+    ret += mlock(_logger_errorCount, sizeof(int) * conf.listCount);
 #endif
 
     for (int i = 1; i < conf.listCount; i++) {
-        _logger_logEntryList[i] = _logger_logEntryList[0] + i * conf.listSize;
+        _logger_nextEntry[i] = 0;
         _logger_errorCount[i] = 0;
+        _logger_logEntryList[i] = _logger_logEntryList[0] + i * conf.listSize;
     }
     // TODO error
     return 0;
+}
+
+void logger_reset() {
+    for (int i = 1; i < _logger_config.listCount; i++) {
+        _logger_nextEntry[i] = 0;
+        _logger_errorCount[i] = 0;
+    }
 }
 
 int logger_addLogEntry(logger_logTag_t tag, long id, int listNumber) {
@@ -169,13 +177,13 @@ int logger_addLogEntry(logger_logTag_t tag, long id, int listNumber) {
     if (_logger_nextEntry[listNumber] >= _logger_config.listSize) {
         _logger_errorCount[listNumber]++;
         return -2;
-    } else {
-        logger_logEntry_t *entr = &_logger_logEntryList[listNumber][_logger_nextEntry[listNumber]];
-        _getTime(&(entr->time_stamp), _logger_config.clockType);
-        entr->id = id;
-        entr->tag = tag;
-        _logger_nextEntry[listNumber]++;
     }
+    logger_logEntry_t *entr = &_logger_logEntryList[listNumber][_logger_nextEntry[listNumber]];
+    _getTime(&(entr->time_stamp), _logger_config.clockType);
+    entr->id = id;
+    entr->tag = tag;
+    _logger_nextEntry[listNumber]++;
+
     return 0;
 }
 

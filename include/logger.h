@@ -213,6 +213,11 @@ int logger_evaluate_diff(logger_tagPair_t *pairList, int pairListCount, logger_t
 int *logger_getErrorCount();
 
 /**
+ * Resets the logger without freeing the memory.
+ */
+void logger_reset();
+
+/**
  * It frees the memory allocated by the logger_init() function
  */
 void logger_clear();
