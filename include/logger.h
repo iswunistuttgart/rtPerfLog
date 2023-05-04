@@ -46,7 +46,7 @@ extern "C" {
         return def;                                                        \
     }
 
-#define LOGGER_TAG_INFO_MAXLEN 25
+#define LOGGER_TAG_INFO_MAXLEN 30
 
 // Type define for a Tag.
 typedef int logger_logTag_t;

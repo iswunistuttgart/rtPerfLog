@@ -318,10 +318,10 @@ int logger_evaluate(logger_tagPair_t *pairList, int pairListCount, logger_tagDef
         char infoe[LOGGER_TAG_INFO_MAXLEN] = "";
         for (int k = 0; k < logDefCount; k++) {
             if (tags == logDef[k].tag) {
-                strcpy(infos, logDef[k].info);
+                strncpy(infos, logDef[k].info, LOGGER_TAG_INFO_MAXLEN);
             }
             if (tage == logDef[k].tag) {
-                strcpy(infoe, logDef[k].info);
+                strncpy(infoe, logDef[k].info, LOGGER_TAG_INFO_MAXLEN);
             }
         }
         if (csv_filename == NULL) {
@@ -368,10 +368,10 @@ int logger_evaluate_diff(logger_tagPair_t *pairList, int pairListCount, logger_t
                                 char infoe[LOGGER_TAG_INFO_MAXLEN] = "";
                                 for (int k = 0; k < logDefCount; k++) {
                                     if (tags == logDef[k].tag) {
-                                        strcpy(infos, logDef[k].info);
+                                        strncpy(infos, logDef[k].info, LOGGER_TAG_INFO_MAXLEN);
                                     }
                                     if (tage == logDef[k].tag) {
-                                        strcpy(infoe, logDef[k].info);
+                                        strncpy(infoe, logDef[k].info, LOGGER_TAG_INFO_MAXLEN);
                                     }
                                 }
                                 if (csv_filename == NULL) {
@@ -455,7 +455,7 @@ int logger_writeListToCSV(const char *fileName, int *exportList, int exportListC
             char info[LOGGER_TAG_INFO_MAXLEN] = "";
             for (int k = 0; k < logDefCount; k++) {
                 if (lEntr->tag == logDef[k].tag) {
-                    strcpy(info, logDef[k].info);
+                    strncpy(info, logDef[k].info, LOGGER_TAG_INFO_MAXLEN);
                     break;
                 }
             }
