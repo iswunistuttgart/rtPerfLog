@@ -84,7 +84,7 @@ Tags are required for logging. The generation of tags with the preprocessor comm
 ```c
 #include "logger.h"
 //define your tags
-#define FOREACH_TAG(TAG) \
+#define TAGS(TAG) \
     TAG(TAG_DEMO) \
     TAG(TAG_DEMO2)
 
@@ -100,13 +100,13 @@ Tags are required for logging. The generation of tags with the preprocessor comm
 //};
 // 
 enum TAG_ENUM {
-    FOREACH_TAG(GENERATE_ENUM)
+    TAGS(GENERATE_ENUM)
     TAG_COUNT
 };
 
 //Similar to the enum generation, a  string array is generated, which is used to export the timestamp by name to the CSV.
 static const char *TAG_STRING[] = {
-    FOREACH_TAG(GENERATE_TAGSTRINGS)
+    TAGS(GENERATE_TAGSTRINGS)
 };
 
 //This function generates the logger_tagDef_t struct by the preprocessor commands.
@@ -118,6 +118,10 @@ logger_tagDef_t* makeLoggerDef(){
     }
   return def;
 }
+
+//The definitions shown above can be simplified by
+GENERATE_DEF(TAGS)
+
 
 //Now you can use the tags to log timestamps by tags and you are able to export the timestamps by the generated tag string names. Only the inital configuration of the logger is missing.
 int main(){
@@ -162,27 +166,11 @@ You can use `logger_evaluate` and `logger_evaluate_diff` to evalute the logging 
 ```c
 #include "logger.h"
 //define your tags
-#define FOREACH_TAG(TAG) \
+#define TAGS(TAG) \
     TAG(TAG_DEMO) \
     TAG(TAG_DEMO2)
 
-enum TAG_ENUM {
-    FOREACH_TAG(GENERATE_ENUM)
-    TAG_COUNT
-};
-
-static const char *TAG_STRING[] = {
-    FOREACH_TAG(GENERATE_TAGSTRINGS)
-};
-
-logger_tagDef_t* makeLoggerDef(){
-  logger_tagDef_t* def = malloc(sizeof(logger_tagDef_t[TAG_COUNT]));
-    for(int i=0;i<TAG_COUNT;i++){
-        def[i].tag = i;
-        strcpy(def[i].info,TAG_STRING[i]);
-    }
-  return def;
-}
+GENERATE_DEF(TAGS)
 
 int main(){
   logger_tagDef_t *tagdef = makeLoggerDef();
@@ -208,7 +196,7 @@ int main(){
   logger_tagPair_t evalList[1] = { { TAG_DEMO_START, TAG_DEMO_END }};
 
   // Prints the evaluation to stdout
-  logger_evaluate(evalList, 1, tagdef, TAG_COUNT, NULL);
+  logger_evaluate(evalList, 1, tagdef, TAG_COUNT, NULL, NULL);
   // This prints something like this:
   // TAG_DEMO_START-TAG_DEMO_END | Count:1000 Min:0.10653 Max:3.68175 Mean:0.17097 Median:0.15712
 
@@ -237,10 +225,12 @@ Non-real-time safe functions. They are used to set up the logger and save the re
   * Writes the logged timestamps of specific lists to one csv file. The lists to export can be defined in the export list array. The `logger_tagDef_t` struct defines the tag mapping.
 * `int* logger_getErrorCount()`
   * Returns the count of errors while trying to wirte to the log list.
-* ` int logger_evaluate(logger_tagPair_t *pairList, int pairListCount, logger_tagDef_t *logDef, int logDefCount, const char *csv_filename);`
+* ` int logger_evaluate(logger_tagPair_t *pairList, int pairListCount, logger_tagDef_t *logDef, int logDefCount, const char *csv_filename, const char *json_filename);`
   * It takes a list of tag pairs and a list of tag definitions and prints out the min, max, mean and median of the time difference between the tags
 * `int logger_evaluate_diff(logger_tagPair_t *pairList, int pairListCount, logger_tagDef_t *logDef, int logDefCount, const char *csv_filename);`
   * It takes a list of tag pairs and a list of tag definitions and export the time difference between each pair of tags
+* `void logger_reset()`
+  * Resets the logger list.
 * `void logger_clear()`
   * Clears the logger. Frees all memory.
 

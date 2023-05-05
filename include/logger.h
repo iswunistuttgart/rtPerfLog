@@ -192,13 +192,14 @@ int logger_writeListToCSV(const char *fileName, int *listIds, int listIdsCount, 
  * @param pairListCount The number of pairs of tags to evaluate.
  * @param logDef This is a list of all the tag meta definitions that you want to evaluate.
  * @param logDefCount The number of tag definitions.
- * @param csv_filename The name of the file to write the results to. If NULL, the
- * results will be printed to the console.
+ * @param csv_filename The name of the file to write the results to in CSV format.
+ * @param json_filename The name of the file to write the results to in JSON format. If csv_filename and json_filename
+ * are NULL, the results will be printed to the console.
  *
  * @return The return value is the status of the function. 0=Sucess;-2=Could not open file
  */
 int logger_evaluate(logger_tagPair_t *pairList, int pairListCount, logger_tagDef_t *logDef, int logDefCount,
-                    const char *csv_filename);
+                    const char *csv_filename, const char *json_filename);
 
 /**
  * It takes a list of tag pairs and a list of tag definitions and exports the

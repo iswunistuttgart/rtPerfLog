@@ -13,42 +13,22 @@
  * @author: Marc Fischer <marc.fischer@isw.uni-stuttgart.de>
  * @description: This file contains some test for rtPerfLog
  */
-#include "logger.h"
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include "logger.h"
 #ifndef WIN
 #include <unistd.h>
 #else
 #include <windows.h>
 #endif
 
-#define FOREACH_TAG(TAG) \
-    TAG(TAG_DEMO)
+#define TAGS(TAG) TAG(TAG_DEMO)
 
-enum TAG_ENUM
-{
-    FOREACH_TAG(GENERATE_ENUM)
-        TAG_COUNT
-};
+GENERATE_DEF(TAGS)
 
-static const char *TAG_STRING[] = {
-    FOREACH_TAG(GENERATE_TAGSTRINGS)};
-
-logger_tagDef_t *makeLoggerDef()
-{
-    logger_tagDef_t *def = malloc(sizeof(logger_tagDef_t[TAG_COUNT]));
-    for (int i = 0; i < TAG_COUNT; i++)
-    {
-        def[i].tag = i;
-        strcpy(def[i].info, TAG_STRING[i]);
-    }
-    return def;
-}
-
-void main()
-{
-
+void main() {
     logger_tagDef_t *def = makeLoggerDef();
     logger_config_t conf;
 #ifdef WIN
@@ -61,8 +41,7 @@ void main()
     logger_init(conf);
     struct timespec start, end;
 
-    for (int i = 0; i < 1000; i++)
-    {
+    for (int i = 0; i < 1000; i++) {
         logger_getTime(&start);
         logger_addLogEntry(TAG_DEMO_START, i, 0);
 #ifdef WIN
@@ -75,8 +54,9 @@ void main()
         struct timespec diff = logger_elapsedTime(start, end);
         printf("Elapsed time is: %fms\n", logger_timespecToFloat_ms(diff));
     }
-    logger_tagPair_t list[1] = {{TAG_DEMO_START, TAG_DEMO_END}};
-    logger_evaluate(list, 1, def, TAG_COUNT, NULL);
+    logger_tagPair_t list[] = {{TAG_DEMO_START, TAG_DEMO_END}, {TAG_DEMO_START, TAG_DEMO_END}};
+    logger_evaluate(list, sizeof(list) / sizeof(enum TAG_ENUM) / 2, def, TAG_COUNT, NULL, NULL);
+    logger_evaluate(list, sizeof(list) / sizeof(enum TAG_ENUM) / 2, def, TAG_COUNT, "test_eval.csv", "test_eval.json");
     logger_writeToCSV("test.csv", def, TAG_COUNT);
     logger_clear();
 }

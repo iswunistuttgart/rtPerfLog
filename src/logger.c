@@ -244,17 +244,27 @@ int __compare(void const *lhs, void const *rhs) {
 }
 
 int logger_evaluate(logger_tagPair_t *pairList, int pairListCount, logger_tagDef_t *logDef, int logDefCount,
-                    const char *csv_filename) {
+                    const char *csv_filename, const char *json_filename) {
 #define DIFFSIZE 1000
-    FILE *pFile = NULL;
+    FILE *pCsvFile = NULL;
+    FILE *pJsonFile = NULL;
     if (csv_filename != NULL) {
-        pFile = fopen(csv_filename, "w");
-        if (!pFile) {
+        pCsvFile = fopen(csv_filename, "w");
+        if (!pCsvFile) {
             printf("[Error] Could not open files: %s\n", strerror(errno));
             return -2;
         }
-        fprintf(pFile, "\n");
-        fprintf(pFile, "TAGS;COUNT;MIN;MAX;AVG;MEDIAN\n");
+        fprintf(pCsvFile, "\n");
+        fprintf(pCsvFile, "TAGS;COUNT;MIN;MAX;AVG;MEDIAN\n");
+    }
+    if (json_filename != NULL) {
+        pJsonFile = fopen(json_filename, "w");
+        if (!pJsonFile) {
+            printf("[Error] Could not open files: %s\n", strerror(errno));
+            return -2;
+        }
+        fprintf(pJsonFile, "\n");
+        fprintf(pJsonFile, "{\"data\":[\n");
     }
     for (int c = 0; c < pairListCount; c++) {
         logger_logTag_t tags = pairList[c].tag_start;
@@ -324,14 +334,32 @@ int logger_evaluate(logger_tagPair_t *pairList, int pairListCount, logger_tagDef
                 strncpy(infoe, logDef[k].info, LOGGER_TAG_INFO_MAXLEN);
             }
         }
-        if (csv_filename == NULL) {
+        if (csv_filename == NULL && json_filename == NULL) {
             printf("%s-%s | Count:%lu Min:%.5fms Max:%.5fms Mean:%.5fms Median:%.5fms\n", infos, infoe, count, min, max,
                    mean / count, median);
-        } else {
-            fprintf(pFile, "%s-%s;%lu;%.10f;%.10f;%.10f;%.10f\n", infos, infoe, count, min, max, mean / count, median);
+        }
+        if (csv_filename != NULL) {
+            fprintf(pCsvFile, "%s-%s;%lu;%.10f;%.10f;%.10f;%.10f\n", infos, infoe, count, min, max, mean / count,
+                    median);
+        }
+        if (json_filename != NULL) {
+            fprintf(pJsonFile, "\t{\n");
+            fprintf(pJsonFile, "\t\t\"name\":\"%s-%s\",\n", infos, infoe);
+            fprintf(pJsonFile, "\t\t\"count\":%lu,\n", count);
+            fprintf(pJsonFile, "\t\t\"min\":%.10f,\n", min);
+            fprintf(pJsonFile, "\t\t\"max\":%.10f,\n", max);
+            fprintf(pJsonFile, "\t\t\"mean\":%.10f,\n", mean / count);
+            fprintf(pJsonFile, "\t\t\"median\":%.10f\n", median);
+            fprintf(pJsonFile, "\t}");
+            if (c < (pairListCount - 1)) fprintf(pJsonFile, ",");
+            fprintf(pJsonFile, "\n");
         }
     }
-    if (csv_filename != NULL) fclose(pFile);
+    if (csv_filename != NULL) fclose(pCsvFile);
+    if (json_filename != NULL) {
+        fprintf(pJsonFile, "]}");
+        fclose(pJsonFile);
+    }
     return 0;
 }
 

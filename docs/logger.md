@@ -215,7 +215,8 @@ int logger_evaluate(
     int pairListCount,
     logger_tagDef_t * logDef,
     int logDefCount,
-    const char * csv_filename
+    const char * csv_filename,
+    const char * json_filename
 )
 ```
 
@@ -226,7 +227,8 @@ int logger_evaluate(
   * **pairListCount** The number of pairs of tags to evaluate. 
   * **logDef** This is a list of all the tag meta definitiosn that you want to evaluate. 
   * **logDefCount** The number of tag definitions. 
-  * **csv_filename** The name of the file to write the results to. If NULL, the results will be printed to the console.
+  * **csv_filename** The name of the file to write the results to in CSV format.
+  * **json_filename** The name of the file to write the results to in JSON format. If **csv_filename** and **json_filename** are NULL the results will be printed to the console.
 
 
 **Return**: The return value is the status of the function. 0=Sucess;-2=Could not open file 
@@ -277,6 +279,14 @@ int * logger_getErrorCount()
 > 
 > 
 
+### function logger_reset
+
+```cpp
+void logger_reset()
+```
+
+
+Resets the logger without freeing the memory.
 
 ### function logger_clear
 
