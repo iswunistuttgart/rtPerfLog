@@ -109,6 +109,10 @@ static const char *TAG_STRING[] = {
     TAGS(GENERATE_TAGSTRINGS)
 };
 
+//It also generates a evaluation list of all defined tags.
+logger_tagPair_t evalListFull[] = {TAGS(GENERATE_EVALLIST)};
+int evalListFullSize = sizeof(evalListFull) / sizeof(enum TAG_ENUM) / 2;
+
 //This function generates the logger_tagDef_t struct by the preprocessor commands.
 logger_tagDef_t* makeLoggerDef(){
   logger_tagDef_t* def = malloc(sizeof(logger_tagDef_t[TAG_COUNT]));
@@ -199,6 +203,9 @@ int main(){
   logger_evaluate(evalList, 1, tagdef, TAG_COUNT, NULL, NULL);
   // This prints something like this:
   // TAG_DEMO_START-TAG_DEMO_END | Count:1000 Min:0.10653 Max:3.68175 Mean:0.17097 Median:0.15712
+
+  // Prints the evaluation with the default list to stdout
+  logger_evaluate(evalListFull, evalListFullSize, tagdef, TAG_COUNT, NULL, NULL);
 
   // Prints the evaluation to stdout
   logger_evaluate_diff(evalList, 1, tagdef, TAG_COUNT, NULL);
