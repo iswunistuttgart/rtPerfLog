@@ -24,7 +24,7 @@
 #include <windows.h>
 #endif
 
-#define TAGS(TAG) TAG(TAG_DEMO)
+#define TAGS(TAG) TAG(TAG_DEMO) TAG(TAG_DEMO2)
 
 GENERATE_DEF(TAGS)
 
@@ -54,9 +54,8 @@ void main() {
         struct timespec diff = logger_elapsedTime(start, end);
         printf("Elapsed time is: %fms\n", logger_timespecToFloat_ms(diff));
     }
-    logger_tagPair_t list[] = {{TAG_DEMO_START, TAG_DEMO_END}, {TAG_DEMO_START, TAG_DEMO_END}};
-    logger_evaluate(list, sizeof(list) / sizeof(enum TAG_ENUM) / 2, def, TAG_COUNT, NULL, NULL);
-    logger_evaluate(list, sizeof(list) / sizeof(enum TAG_ENUM) / 2, def, TAG_COUNT, "test_eval.csv", "test_eval.json");
+    logger_evaluate(evalListFull, evalListFullSize, def, TAG_COUNT, NULL, NULL);
+    logger_evaluate(evalListFull, evalListFullSize, def, TAG_COUNT, "test_eval.csv", "test_eval.json");
     logger_writeToCSV("test.csv", def, TAG_COUNT);
     logger_clear();
 }

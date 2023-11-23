@@ -31,9 +31,9 @@ extern "C" {
 
 // Helper defines to generate TAGs
 #define GENERATE_ENUM(ENUM) ENUM##_START, ENUM##_END,
+#define GENERATE_EVALLIST(ENUM) {ENUM##_START, ENUM##_END},
 #define GENERATE_STRING(STRING) #STRING
 #define GENERATE_TAGSTRINGS(TAG) GENERATE_STRING(TAG##_START), GENERATE_STRING(TAG##_END),
-
 #define GENERATE_DEF(TAGS)                                                 \
     enum TAG_ENUM { TAGS(GENERATE_ENUM) TAG_COUNT };                       \
     static const char *TAG_STRING[] = {TAGS(GENERATE_TAGSTRINGS)};         \
@@ -44,7 +44,9 @@ extern "C" {
             strcpy(def[i].info, TAG_STRING[i]);                            \
         }                                                                  \
         return def;                                                        \
-    }
+    }                                                                      \
+    logger_tagPair_t evalListFull[] = {TAGS(GENERATE_EVALLIST)};           \
+    int evalListFullSize = sizeof(evalListFull) / sizeof(enum TAG_ENUM) / 2;
 
 #define LOGGER_TAG_INFO_MAXLEN 30
 
