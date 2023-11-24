@@ -143,27 +143,24 @@ int logger_init(logger_config_t conf) {
     _logger_config = conf;
 
     _logger_nextEntry = (int *)calloc(conf.listCount, sizeof(int));
-    _logger_logEntryList = (logger_logEntry_t **)malloc(sizeof(logger_logEntry_t *) * conf.listCount);
-    _logger_logEntryList[0] = (logger_logEntry_t *)malloc(sizeof(logger_logEntry_t) * conf.listSize * conf.listCount);
+    _logger_logEntryList = (logger_logEntry_t *)malloc(sizeof(logger_logEntry_t) * conf.listSize * conf.listCount);
     _logger_errorCount = (int *)calloc(conf.listCount, sizeof(int));
 #ifndef WIN
     int ret = mlock(_logger_nextEntry, sizeof(int) * conf.listCount);
-    ret += mlock(_logger_nextEntry, sizeof(logger_logEntry_t *) * conf.listCount);
-    ret += mlock(_logger_logEntryList[0], sizeof(logger_logEntry_t) * conf.listSize * conf.listCount);
+    ret += mlock(_logger_logEntryList, sizeof(logger_logEntry_t) * conf.listSize * conf.listCount);
     ret += mlock(_logger_errorCount, sizeof(int) * conf.listCount);
 #endif
 
-    for (int i = 1; i < conf.listCount; i++) {
+    for (int i = 0; i < conf.listCount; i++) {
         _logger_nextEntry[i] = 0;
         _logger_errorCount[i] = 0;
-        _logger_logEntryList[i] = _logger_logEntryList[0] + i * conf.listSize;
     }
     // TODO error
     return 0;
 }
 
 void logger_reset() {
-    for (int i = 1; i < _logger_config.listCount; i++) {
+    for (int i = 0; i < _logger_config.listCount; i++) {
         _logger_nextEntry[i] = 0;
         _logger_errorCount[i] = 0;
     }
@@ -178,7 +175,8 @@ int logger_addLogEntry(logger_logTag_t tag, long id, int listNumber) {
         _logger_errorCount[listNumber]++;
         return -2;
     }
-    logger_logEntry_t *entr = &_logger_logEntryList[listNumber][_logger_nextEntry[listNumber]];
+    logger_logEntry_t *entr =
+        &_logger_logEntryList[listNumber * _logger_config.listSize + _logger_nextEntry[listNumber]];
     _getTime(&(entr->time_stamp), _logger_config.clockType);
     entr->id = id;
     entr->tag = tag;
@@ -196,7 +194,8 @@ int logger_addLogEntryCustTime(logger_logTag_t tag, long id, int listNumber, str
         _logger_errorCount[listNumber]++;
         return -2;
     } else {
-        logger_logEntry_t *entr = &_logger_logEntryList[listNumber][_logger_nextEntry[listNumber]];
+        logger_logEntry_t *entr =
+            &_logger_logEntryList[listNumber * _logger_config.listSize + _logger_nextEntry[listNumber]];
         entr->time_stamp = time;
         entr->id = id;
         entr->tag = tag;
@@ -277,15 +276,13 @@ int logger_evaluate(logger_tagPair_t *pairList, int pairListCount, logger_tagDef
         double *median_list = (double *)malloc(median_list_size * sizeof(double));
 
         for (int j = 0; j < _logger_config.listCount; j++) {
-            logger_logEntry_t *it1_list = _logger_logEntryList[j];
             for (int i = 0; i < _logger_nextEntry[j]; i++) {
-                logger_logEntry_t it1_entry = it1_list[i];
+                logger_logEntry_t it1_entry = _logger_logEntryList[j * _logger_config.listSize + i];
                 bool it2_isBreak = false;
                 if (it1_entry.tag == tags) {
                     for (int k = 0; k < _logger_config.listCount; k++) {
-                        logger_logEntry_t *it2_list = _logger_logEntryList[k];
                         for (int l = 0; l < _logger_nextEntry[k]; l++) {
-                            logger_logEntry_t it2_entry = it2_list[l];
+                            logger_logEntry_t it2_entry = _logger_logEntryList[k * _logger_config.listSize + l];
                             if (it2_entry.tag == tage && it1_entry.id == it2_entry.id) {
                                 struct timespec diff = logger_elapsedTime(it1_entry.time_stamp, it2_entry.time_stamp);
                                 double diff_ms = logger_timespecToFloat_ms(diff);
@@ -380,15 +377,13 @@ int logger_evaluate_diff(logger_tagPair_t *pairList, int pairListCount, logger_t
         logger_logTag_t tage = pairList[c].tag_end;
 
         for (int j = 0; j < _logger_config.listCount; j++) {
-            logger_logEntry_t *it1_list = _logger_logEntryList[j];
             for (int i = 0; i < _logger_nextEntry[j]; i++) {
-                logger_logEntry_t it1_entry = it1_list[i];
+                logger_logEntry_t it1_entry = _logger_logEntryList[j * _logger_config.listSize + i];
                 bool it2_isBreak = false;
                 if (it1_entry.tag == tags) {
                     for (int k = 0; k < _logger_config.listCount; k++) {
-                        logger_logEntry_t *it2_list = _logger_logEntryList[k];
                         for (int l = 0; l < _logger_nextEntry[k]; l++) {
-                            logger_logEntry_t it2_entry = it2_list[l];
+                            logger_logEntry_t it2_entry = _logger_logEntryList[k * _logger_config.listSize + l];
                             if (it2_entry.tag == tage && it1_entry.id == it2_entry.id) {
                                 struct timespec diff = logger_elapsedTime(it1_entry.time_stamp, it2_entry.time_stamp);
                                 double diff_ms = logger_timespecToFloat_ms(diff);
@@ -453,9 +448,9 @@ int logger_writeListToCSV(const char *fileName, int *exportList, int exportListC
                 continue;
             }
         }
-        if (_logger_logEntryList[j][0].time_stamp.tv_sec > 0 &&
-            _logger_logEntryList[j][0].time_stamp.tv_sec < startTime) {
-            startTime = (long)_logger_logEntryList[j][0].time_stamp.tv_sec;
+        if (_logger_logEntryList[j * _logger_config.listSize].time_stamp.tv_sec > 0 &&
+            _logger_logEntryList[j * _logger_config.listSize].time_stamp.tv_sec < startTime) {
+            startTime = (long)_logger_logEntryList[j * _logger_config.listSize].time_stamp.tv_sec;
         }
     }
 
@@ -473,7 +468,7 @@ int logger_writeListToCSV(const char *fileName, int *exportList, int exportListC
             }
         }
         for (int i = 0; i < _logger_nextEntry[j]; i++) {
-            logger_logEntry_t *lEntr = &_logger_logEntryList[j][i];
+            logger_logEntry_t *lEntr = &_logger_logEntryList[j * _logger_config.listSize + i];
             int stellen = _log10(lEntr->time_stamp.tv_nsec);
             int restZeros = 8 - stellen;
             char zeroString[9] = "";
@@ -536,10 +531,8 @@ float logger_timespecToFloat_ms(struct timespec time) {
 void logger_clear() {
 #ifndef WIN
     munlock(_logger_nextEntry, sizeof(int) * _logger_config.listCount);
-    munlock(_logger_logEntryList[0], sizeof(logger_logEntry_t) * _logger_config.listSize * _logger_config.listCount);
-    munlock(_logger_logEntryList, sizeof(logger_logEntry_t *) * _logger_config.listCount);
+    munlock(_logger_logEntryList, sizeof(logger_logEntry_t) * _logger_config.listSize * _logger_config.listCount);
 #endif
     free(_logger_nextEntry);
-    free(_logger_logEntryList[0]);
     free(_logger_logEntryList);
 }

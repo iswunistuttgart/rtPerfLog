@@ -19,7 +19,7 @@
 #include "logger.h"
 // To store the logger results, static variables are used, so that an mem initialization must be called only once and
 // not per compilation unit.
-static logger_logEntry_t **_logger_logEntryList;
+static logger_logEntry_t *_logger_logEntryList;
 static int *_logger_nextEntry;
 static logger_config_t _logger_config;
 static int *_logger_errorCount;

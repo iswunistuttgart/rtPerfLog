@@ -57,5 +57,7 @@ void main() {
     logger_evaluate(evalListFull, evalListFullSize, def, TAG_COUNT, NULL, NULL);
     logger_evaluate(evalListFull, evalListFullSize, def, TAG_COUNT, "test_eval.csv", "test_eval.json");
     logger_writeToCSV("test.csv", def, TAG_COUNT);
+    logger_reset();
+    logger_evaluate(evalListFull, evalListFullSize, def, TAG_COUNT, NULL, NULL);
     logger_clear();
 }
