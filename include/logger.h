@@ -34,19 +34,19 @@ extern "C" {
 #define GENERATE_EVALLIST(ENUM) {ENUM##_START, ENUM##_END},
 #define GENERATE_STRING(STRING) #STRING
 #define GENERATE_TAGSTRINGS(TAG) GENERATE_STRING(TAG##_START), GENERATE_STRING(TAG##_END),
-#define GENERATE_DEF(TAGS)                                                 \
-    enum TAG_ENUM { TAGS(GENERATE_ENUM) TAG_COUNT };                       \
-    static const char *TAG_STRING[] = {TAGS(GENERATE_TAGSTRINGS)};         \
-    logger_tagDef_t *makeLoggerDef() {                                     \
-        logger_tagDef_t *def = malloc(sizeof(logger_tagDef_t[TAG_COUNT])); \
-        for (int i = 0; i < TAG_COUNT; i++) {                              \
-            def[i].tag = i;                                                \
-            strcpy(def[i].info, TAG_STRING[i]);                            \
-        }                                                                  \
-        return def;                                                        \
-    }                                                                      \
-    logger_tagPair_t evalListFull[] = {TAGS(GENERATE_EVALLIST)};           \
-    int evalListFullSize = sizeof(evalListFull) / sizeof(enum TAG_ENUM) / 2;
+#define GENERATE_DEF(TAGS)                                                  \
+    enum TAG_ENUM { TAGS(GENERATE_ENUM) TAG_COUNT };                        \
+    static const char *TAG_STRING[] = {TAGS(GENERATE_TAGSTRINGS)};          \
+    logger_tagDef_t *makeLoggerDef() {                                      \
+        logger_tagDef_t *def = malloc(sizeof(logger_tagDef_t) * TAG_COUNT); \
+        for (int i = 0; i < TAG_COUNT; i++) {                               \
+            def[i].tag = i;                                                 \
+            strcpy(def[i].info, TAG_STRING[i]);                             \
+        }                                                                   \
+        return def;                                                         \
+    }                                                                       \
+    logger_tagPair_t evalListFull[] = {TAGS(GENERATE_EVALLIST)};            \
+    int evalListFullSize = sizeof(evalListFull) / 2 / sizeof(enum TAG_ENUM);
 
 #define LOGGER_TAG_INFO_MAXLEN 30
 

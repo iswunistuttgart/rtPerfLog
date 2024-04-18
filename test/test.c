@@ -28,7 +28,7 @@
 
 GENERATE_DEF(TAGS)
 
-void main() {
+int main() {
     logger_tagDef_t *def = makeLoggerDef();
     logger_config_t conf;
 #ifdef WIN
@@ -60,4 +60,5 @@ void main() {
     logger_reset();
     logger_evaluate(evalListFull, evalListFullSize, def, TAG_COUNT, NULL, NULL);
     logger_clear();
+    return 0;
 }
